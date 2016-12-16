@@ -1,28 +1,30 @@
-FROM library/ubuntu:14.04.3
+FROM ubuntu:16.04
 MAINTAINER 74th<site@j74th.com>
 
 RUN apt-get update
 RUN apt-get install -y software-properties-common
 RUN apt-add-repository ppa:brightbox/ruby-ng
 RUN apt-get update
-RUN echo "mysql-server-5.5 mysql-server/root_password password redmine" | debconf-set-selections
-RUN echo "mysql-server-5.5 mysql-server/root_password_again password redmine" | debconf-set-selections
+RUN echo "mysql-server-5.7 mysql-server/root_password password redmine" | debconf-set-selections
+RUN echo "mysql-server-5.7 mysql-server/root_password_again password redmine" | debconf-set-selections
 RUN apt-get install -y \
 	build-essential zlib1g-dev libssl-dev libreadline-dev libyaml-dev libcurl4-openssl-dev \
-	mysql-server-5.5 \
-	apache2-mpm-worker apache2-threaded-dev libapr1-dev libaprutil1-dev apache2-utils \
+	mysql-server-5.7 \
+	apache2 apache2-dev libapr1-dev libaprutil1-dev apache2-utils \
 	imagemagick libmagick++-dev fonts-takao-pgothic \
 	subversion libapache2-svn \
 	git gitweb libssh2-1 libssh2-1-dev cmake libgpg-error-dev \
-	ruby2.2 ruby2.2-dev \
-	libapache2-mod-auth-mysql libdigest-sha-perl libapache-dbi-perl libdbd-mysql-perl libauthen-simple-ldap-perl
+	ruby2.2 ruby2.2-dev
+	#libapache2-mod-auth-mysql
+RUN apt-get install -y libdigest-sha-perl libapache-dbi-perl libdbd-mysql-perl libauthen-simple-ldap-perl \
+	libmysqlclient-dev mercurial
 
 RUN gem install bundler
 RUN gem install passenger --no-rdoc --no-ri
 RUN passenger-install-apache2-module --auto
 
 # Redmine
-RUN svn co http://svn.redmine.org/redmine/branches/3.2-stable/ /var/lib/redmine
+RUN svn co http://svn.redmine.org/redmine/branches/3.3-stable/ /var/lib/redmine
 ADD config/* /var/lib/redmine/config/
 WORKDIR /var/lib/redmine
 
@@ -53,6 +55,7 @@ RUN sed -i -e 's/gem "nokogiri".*/gem "nokogiri", ">= 1.6.7.2"/g' /var/lib/redmi
 RUN git clone https://github.com/jbbarth/redmine_drafts.git /var/lib/redmine/plugins/redmine_drafts
 
 # bundle and rake
+RUN apt-get install -y sudo
 RUN bundle install --without development test --path vendor/bundle
 RUN bundle exec gem install mysql
 RUN chown -R www-data:www-data /var/lib/redmine/
