@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER 74th<site@j74th.com>
+MAINTAINER HiroProtagoinist7777<HiroProtagonist7777@github.com>
 
 RUN apt-get update
 RUN apt-get install -y software-properties-common
